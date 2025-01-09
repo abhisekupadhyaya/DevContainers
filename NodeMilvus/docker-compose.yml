@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  milvus:
+    image: milvus:v2.4.13
+    container_name: milvus
+    environment:
+      - COMMON_HOST=0.0.0.0
+      - COMMON_PORT=19530
+      - PROXY_PORT=19530
+      - ETCD_USE_EMBED=true
+      - ETCD_DATA_DIR=/var/lib/milvus/etcd
+      - ETCD_CONFIG_PATH=/milvus/configs/embedEtcd.yaml
+      - COMMON_STORAGETYPE=local
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+      - "2379:2379"
+    volumes:
+      - milvus_data:/var/lib/milvus
+    networks:
+      - vectorDB-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 90s
+
+  attu:
+    image: zilliz/attu:latest
+    container_name: attu
+    environment:
+      - MILVUS_URL=milvus:19530
+    ports:
+      - "8080:3000"
+    depends_on:
+      - milvus
+    networks:
+      - vectorDB-net
+
+  ollama:
+    image: ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    command: ["serve"]
+    networks:
+      - vectorDB-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  nodejs:
+    image: nodejs:latest
+    container_name: nodejs
+    networks:
+      - vectorDB-net
+    volumes:
+      - nodejs_data:/workspace/node_modules
+
+volumes:
+  milvus_data:
+  ollama_data:
+  nodejs_data:
+
+networks:
+  vectorDB-net:
+    driver: bridge
