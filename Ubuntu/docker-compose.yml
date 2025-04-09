@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  gsx:
+    image: ubuntu
+    container_name: ubuntu
+    ports:
+      - "8833:8833"
+    volumes:
+      - data:/ubuntu
+      - ./workspace:/workspace
+    restart: unless-stopped
+
+volumes:
+  data:
