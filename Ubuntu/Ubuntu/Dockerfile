@@ -1,5 +1,5 @@
 # Dockerfile
-FROM mcr.microsoft.com/devcontainers/base:jammy
+FROM mcr.microsoft.com/devcontainers/base:noble
 
 # Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
